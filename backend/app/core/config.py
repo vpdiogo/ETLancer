@@ -1,16 +1,36 @@
-from pydantic import BaseSettings
+from pydantic import computed_field
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "ETLancer"
     API_V1_STR: str = "/api/v1"
+
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "etlancer"
     POSTGRES_HOST: str = "db"
     POSTGRES_PORT: str = "5432"
-    DATABASE_URL: str = (
-        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:"
-        f"{POSTGRES_PORT}/{POSTGRES_DB}"
-    )
+
+    PREFECT_API_URL: str = "http://prefect-server:4200/api"
+
+    @computed_field
+    @property
+    def DATABASE_URL(self) -> str:
+        return (
+            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
+
+    @computed_field
+    @property
+    def ASYNC_DATABASE_URL(self) -> str:
+        return (
+            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
+
+    model_config = {"env_file": ".env", "extra": "ignore"}
+
 
 settings = Settings()
