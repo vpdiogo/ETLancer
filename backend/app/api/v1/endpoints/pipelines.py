@@ -26,7 +26,9 @@ async def list_pipelines(
     is_active: bool | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    return await crud.get_pipelines(db, skip=skip, limit=limit, is_active=is_active)
+    return await crud.get_pipelines(
+        db, skip=skip, limit=limit, is_active=is_active
+    )
 
 
 @router.get("/{pipeline_id}", response_model=PipelineRead)
@@ -60,7 +62,11 @@ async def delete_pipeline(
         raise HTTPException(status_code=404, detail="Pipeline not found")
 
 
-@router.post("/{pipeline_id}/run", response_model=PipelineRunRead, status_code=201)
+@router.post(
+    "/{pipeline_id}/run",
+    response_model=PipelineRunRead,
+    status_code=201,
+)
 async def trigger_pipeline_run(
     pipeline_id: uuid.UUID, db: AsyncSession = Depends(get_db)
 ):

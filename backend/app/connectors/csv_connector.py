@@ -58,7 +58,12 @@ class CsvConnector(BaseConnector):
             )
 
         path = self.config["file_path"]
-        return pd.read_csv(path, delimiter=delimiter, encoding=encoding, header=header)
+        return pd.read_csv(
+            path,
+            delimiter=delimiter,
+            encoding=encoding,
+            header=header,
+        )
 
     @classmethod
     def config_schema(cls) -> dict:

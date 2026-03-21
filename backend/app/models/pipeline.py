@@ -33,5 +33,7 @@ class Pipeline(Base):
 
     source_connection = relationship("Connection", back_populates="pipelines")
     runs = relationship(
-        "PipelineRun", back_populates="pipeline", order_by="PipelineRun.created_at.desc()"
+        "PipelineRun",
+        back_populates="pipeline",
+        order_by="PipelineRun.created_at.desc()",
     )

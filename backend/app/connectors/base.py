@@ -9,17 +9,13 @@ class BaseConnector(ABC):
         self.credentials = credentials or {}
 
     @abstractmethod
-    async def test_connection(self) -> bool:
-        """Verify the connection works. Raises on failure."""
-        ...
+    async def test_connection(self) -> bool: ...
 
     @abstractmethod
-    async def extract(self, extraction_config: dict) -> pd.DataFrame:
-        """Pull data from the source and return as a DataFrame."""
-        ...
+    async def extract(
+        self, extraction_config: dict
+    ) -> pd.DataFrame: ...
 
     @classmethod
     @abstractmethod
-    def config_schema(cls) -> dict:
-        """Return JSON Schema describing required config fields."""
-        ...
+    def config_schema(cls) -> dict: ...

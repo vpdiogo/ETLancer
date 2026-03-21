@@ -44,7 +44,10 @@ class RestApiConnector(BaseConnector):
         pagination = extraction_config.get("pagination")
 
         headers = self._build_headers()
-        url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}" if endpoint else base_url
+        if endpoint:
+            url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
+        else:
+            url = base_url
 
         async with httpx.AsyncClient(headers=headers, timeout=30) as client:
             if pagination and pagination.get("type") == "offset":
@@ -52,7 +55,9 @@ class RestApiConnector(BaseConnector):
                     client, url, method, params, pagination
                 )
             else:
-                records = await self._extract_single(client, url, method, params)
+                records = await self._extract_single(
+                    client, url, method, params
+                )
 
         return pd.DataFrame(records)
 
@@ -86,8 +91,14 @@ class RestApiConnector(BaseConnector):
         offset = 0
 
         while True:
-            page_params = {**params, limit_param: page_size, offset_param: offset}
-            records = await self._extract_single(client, url, method, page_params)
+            page_params = {
+                **params,
+                limit_param: page_size,
+                offset_param: offset,
+            }
+            records = await self._extract_single(
+                client, url, method, page_params
+            )
             if not records:
                 break
             all_records.extend(records)
@@ -100,9 +111,14 @@ class RestApiConnector(BaseConnector):
     def _build_headers(self) -> dict:
         headers = {}
         if self.credentials.get("api_key"):
-            header_name = self.credentials.get("header_name", "Authorization")
-            header_prefix = self.credentials.get("header_prefix", "Bearer ")
-            headers[header_name] = f"{header_prefix}{self.credentials['api_key']}"
+            header_name = self.credentials.get(
+                "header_name", "Authorization"
+            )
+            header_prefix = self.credentials.get(
+                "header_prefix", "Bearer "
+            )
+            api_key = self.credentials["api_key"]
+            headers[header_name] = f"{header_prefix}{api_key}"
         return headers
 
     @classmethod
@@ -110,7 +126,10 @@ class RestApiConnector(BaseConnector):
         return {
             "type": "object",
             "properties": {
-                "base_url": {"type": "string", "description": "Base URL of the API"},
+                "base_url": {
+                    "type": "string",
+                    "description": "Base URL of the API",
+                },
             },
             "required": ["base_url"],
         }

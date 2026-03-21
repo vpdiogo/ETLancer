@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.pipeline_run import PipelineRun
 
 
-async def create_pipeline_run(db: AsyncSession, pipeline_id: uuid.UUID) -> PipelineRun:
+async def create_pipeline_run(
+    db: AsyncSession, pipeline_id: uuid.UUID
+) -> PipelineRun:
     run = PipelineRun(pipeline_id=pipeline_id, status="pending")
     db.add(run)
     await db.commit()
@@ -14,8 +16,12 @@ async def create_pipeline_run(db: AsyncSession, pipeline_id: uuid.UUID) -> Pipel
     return run
 
 
-async def get_pipeline_run(db: AsyncSession, run_id: uuid.UUID) -> PipelineRun | None:
-    result = await db.execute(select(PipelineRun).where(PipelineRun.id == run_id))
+async def get_pipeline_run(
+    db: AsyncSession, run_id: uuid.UUID
+) -> PipelineRun | None:
+    result = await db.execute(
+        select(PipelineRun).where(PipelineRun.id == run_id)
+    )
     return result.scalar_one_or_none()
 
 
@@ -31,7 +37,11 @@ async def get_pipeline_runs(
         query = query.where(PipelineRun.pipeline_id == pipeline_id)
     if status:
         query = query.where(PipelineRun.status == status)
-    query = query.offset(skip).limit(limit).order_by(PipelineRun.created_at.desc())
+    query = (
+        query.offset(skip)
+        .limit(limit)
+        .order_by(PipelineRun.created_at.desc())
+    )
     result = await db.execute(query)
     return list(result.scalars().all())
 

@@ -4,10 +4,13 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_create_pipeline(client: AsyncClient):
-    # First create a connection
     conn_response = await client.post(
         "/api/v1/connections/",
-        json={"name": "Pipeline Source", "connector_type": "rest_api", "config": {}},
+        json={
+            "name": "Pipeline Source",
+            "connector_type": "rest_api",
+            "config": {},
+        },
     )
     conn_id = conn_response.json()["id"]
 

@@ -7,7 +7,9 @@ from app.models.connection import Connection
 from app.schemas.connection import ConnectionCreate, ConnectionUpdate
 
 
-async def create_connection(db: AsyncSession, data: ConnectionCreate) -> Connection:
+async def create_connection(
+    db: AsyncSession, data: ConnectionCreate
+) -> Connection:
     conn = Connection(**data.model_dump())
     db.add(conn)
     await db.commit()
@@ -15,8 +17,14 @@ async def create_connection(db: AsyncSession, data: ConnectionCreate) -> Connect
     return conn
 
 
-async def get_connection(db: AsyncSession, connection_id: uuid.UUID) -> Connection | None:
-    result = await db.execute(select(Connection).where(Connection.id == connection_id))
+async def get_connection(
+    db: AsyncSession, connection_id: uuid.UUID
+) -> Connection | None:
+    result = await db.execute(
+        select(Connection).where(
+            Connection.id == connection_id
+        )
+    )
     return result.scalar_one_or_none()
 
 
@@ -29,7 +37,11 @@ async def get_connections(
     query = select(Connection)
     if connector_type:
         query = query.where(Connection.connector_type == connector_type)
-    query = query.offset(skip).limit(limit).order_by(Connection.created_at.desc())
+    query = (
+        query.offset(skip)
+        .limit(limit)
+        .order_by(Connection.created_at.desc())
+    )
     result = await db.execute(query)
     return list(result.scalars().all())
 

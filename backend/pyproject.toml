@@ -32,11 +32,12 @@ dev = [
 ]
 
 [tool.black]
-line-length = 88
+line-length = 80
 target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
+line_length = 80
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

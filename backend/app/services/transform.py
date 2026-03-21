@@ -1,8 +1,10 @@
 import pandas as pd
 
 
-def apply_transforms(df: pd.DataFrame, transform_config: list[dict] | None) -> pd.DataFrame:
-    """Apply a list of transform steps sequentially to a DataFrame."""
+def apply_transforms(
+    df: pd.DataFrame,
+    transform_config: list[dict] | None,
+) -> pd.DataFrame:
     if not transform_config:
         return df
 

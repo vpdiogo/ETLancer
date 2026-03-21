@@ -5,7 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.crud import connection as crud
-from app.schemas.connection import ConnectionCreate, ConnectionRead, ConnectionUpdate
+from app.schemas.connection import (
+    ConnectionCreate,
+    ConnectionRead,
+    ConnectionUpdate,
+)
 
 router = APIRouter(prefix="/connections", tags=["connections"])
 
@@ -24,7 +28,12 @@ async def list_connections(
     connector_type: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
-    return await crud.get_connections(db, skip=skip, limit=limit, connector_type=connector_type)
+    return await crud.get_connections(
+        db,
+        skip=skip,
+        limit=limit,
+        connector_type=connector_type,
+    )
 
 
 @router.get("/{connection_id}", response_model=ConnectionRead)
@@ -69,7 +78,11 @@ async def test_connection(
     from app.connectors.registry import get_connector
 
     try:
-        connector = get_connector(conn.connector_type, conn.config, conn.credentials)
+        connector = get_connector(
+            conn.connector_type,
+            conn.config,
+            conn.credentials,
+        )
         await connector.test_connection()
         return {"status": "ok", "message": "Connection successful"}
     except Exception as e:

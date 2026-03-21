@@ -11,7 +11,6 @@ from app.orchestration.tasks import extract_data, load_data, transform_data
 
 @flow(name="etl_pipeline_flow")
 async def run_etl_pipeline(pipeline_id: str, run_id: str) -> None:
-    """Execute a full ETL pipeline: extract -> transform -> load."""
     logger = get_run_logger()
     pid = uuid.UUID(pipeline_id)
     rid = uuid.UUID(run_id)
@@ -31,7 +30,6 @@ async def run_etl_pipeline(pipeline_id: str, run_id: str) -> None:
     try:
         logger.info(f"Starting ETL for pipeline: {pipeline.name}")
 
-        # Extract
         df = await extract_data(
             connector_type=pipeline.source_connection.connector_type,
             config=pipeline.source_connection.config,
@@ -41,11 +39,9 @@ async def run_etl_pipeline(pipeline_id: str, run_id: str) -> None:
         rows_extracted = len(df)
         logger.info(f"Extracted {rows_extracted} rows")
 
-        # Transform
         df = transform_data(df, pipeline.transform_config)
         logger.info(f"Transformed data: {len(df)} rows")
 
-        # Load
         rows_loaded = load_data(df, pipeline.load_config)
         logger.info(f"Loaded {rows_loaded} rows")
 

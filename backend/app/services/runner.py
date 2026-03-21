@@ -11,12 +11,10 @@ from app.services.transform import apply_transforms
 
 
 async def trigger_run(pipeline: Pipeline, run: PipelineRun) -> None:
-    """Execute an ETL pipeline run asynchronously."""
     asyncio.create_task(_execute_run(pipeline, run))
 
 
 async def _execute_run(pipeline: Pipeline, run: PipelineRun) -> None:
-    """Execute the full ETL flow: extract -> transform -> load."""
     async with AsyncSessionLocal() as db:
         try:
             await update_pipeline_run(
