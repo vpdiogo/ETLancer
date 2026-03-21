@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str = "5432"
 
     PREFECT_API_URL: str = "http://prefect-server:4200/api"
+    PREFECT_API_KEY: str = ""
 
     @computed_field
     @property

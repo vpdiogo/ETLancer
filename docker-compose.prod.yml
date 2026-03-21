@@ -1,0 +1,57 @@
+# Production docker-compose for GCP e2-micro
+# Frontend is deployed separately on Vercel
+# Prefect orchestration uses Prefect Cloud (no local server)
+services:
+  db:
+    image: postgres:13
+    container_name: etlancer-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-etlancer}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: etlancer-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-etlancer}
+      PREFECT_API_URL: ${PREFECT_API_URL}
+      PREFECT_API_KEY: ${PREFECT_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    container_name: etlancer-worker
+    restart: unless-stopped
+    command: uv run prefect worker start --pool default-agent-pool --type process
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-etlancer}
+      PREFECT_API_URL: ${PREFECT_API_URL}
+      PREFECT_API_KEY: ${PREFECT_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
