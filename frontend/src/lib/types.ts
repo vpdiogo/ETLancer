@@ -18,6 +18,15 @@ export interface ConnectionCreate {
   is_active?: boolean;
 }
 
+export interface ConnectionUpdate {
+  name?: string;
+  connector_type?: string;
+  config?: Record<string, unknown>;
+  credentials?: Record<string, unknown> | null;
+  description?: string;
+  is_active?: boolean;
+}
+
 export interface Pipeline {
   id: string;
   name: string;
@@ -39,6 +48,17 @@ export interface PipelineCreate {
   extraction_config?: Record<string, unknown> | null;
   transform_config?: Record<string, unknown>[] | null;
   load_config: Record<string, unknown>;
+  schedule?: string;
+  is_active?: boolean;
+}
+
+export interface PipelineUpdate {
+  name?: string;
+  description?: string;
+  source_connection_id?: string;
+  extraction_config?: Record<string, unknown> | null;
+  transform_config?: Record<string, unknown>[] | null;
+  load_config?: Record<string, unknown>;
   schedule?: string;
   is_active?: boolean;
 }

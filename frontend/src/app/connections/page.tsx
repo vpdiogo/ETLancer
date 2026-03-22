@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Globe, FileSpreadsheet, FileText, Plus, Trash2 } from "lucide-react";
 import { useConnections, useDeleteConnection } from "@/hooks/useConnections";
+import { useToast } from "@/components/ui/Toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 const connectorIcons: Record<string, React.ElementType> = {
   rest_api: Globe,
@@ -19,6 +22,19 @@ const connectorLabels: Record<string, string> = {
 export default function ConnectionsPage() {
   const { data: connections, isLoading } = useConnections();
   const deleteConnection = useDeleteConnection();
+  const toast = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteConnection.mutateAsync(deleteTarget.id);
+      toast.success(`Connection "${deleteTarget.name}" deleted`);
+    } catch {
+      toast.error("Failed to delete connection");
+    }
+    setDeleteTarget(null);
+  };
 
   return (
     <div>
@@ -63,7 +79,7 @@ export default function ConnectionsPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => deleteConnection.mutate(conn.id)}
+                    onClick={() => setDeleteTarget({ id: conn.id, name: conn.name })}
                     className="text-gray-400 hover:text-red-500"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -103,6 +119,14 @@ export default function ConnectionsPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete connection"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

@@ -1,11 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import {
   useConnection,
   useDeleteConnection,
   useTestConnection,
 } from "@/hooks/useConnections";
+import { useToast } from "@/components/ui/Toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export default function ConnectionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +18,8 @@ export default function ConnectionDetailPage() {
   const { data: connection, isLoading } = useConnection(id);
   const deleteConnection = useDeleteConnection();
   const testConnection = useTestConnection();
+  const toast = useToast();
+  const [showDelete, setShowDelete] = useState(false);
 
   if (isLoading) return <div className="text-gray-500">Loading...</div>;
   if (!connection) return <div className="text-gray-500">Not found</div>;
@@ -22,20 +29,32 @@ export default function ConnectionDetailPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{connection.name}</h1>
         <div className="flex gap-2">
+          <Link
+            href={`/connections/${id}/edit`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit
+          </Link>
           <button
             onClick={async () => {
-              const result = await testConnection.mutateAsync(id);
-              alert(`Test: ${result.status} - ${result.message}`);
+              try {
+                const result = await testConnection.mutateAsync(id);
+                if (result.status === "ok") {
+                  toast.success(result.message);
+                } else {
+                  toast.error(result.message);
+                }
+              } catch {
+                toast.error("Failed to test connection");
+              }
             }}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             {testConnection.isPending ? "Testing..." : "Test Connection"}
           </button>
           <button
-            onClick={async () => {
-              await deleteConnection.mutateAsync(id);
-              router.push("/connections");
-            }}
+            onClick={() => setShowDelete(true)}
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
           >
             Delete
@@ -77,6 +96,23 @@ export default function ConnectionDetailPage() {
           </p>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showDelete}
+        title="Delete connection"
+        message={`Are you sure you want to delete "${connection.name}"? This action cannot be undone.`}
+        onConfirm={async () => {
+          try {
+            await deleteConnection.mutateAsync(id);
+            toast.success(`Connection "${connection.name}" deleted`);
+            router.push("/connections");
+          } catch {
+            toast.error("Failed to delete connection");
+          }
+          setShowDelete(false);
+        }}
+        onCancel={() => setShowDelete(false)}
+      />
     </div>
   );
 }

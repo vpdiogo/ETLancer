@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { Connection, ConnectionCreate } from "@/lib/types";
+import { Connection, ConnectionCreate, ConnectionUpdate } from "@/lib/types";
 
 export function useConnections() {
   return useQuery<Connection[]>({
@@ -32,6 +32,20 @@ export function useCreateConnection() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["connections"] });
+    },
+  });
+}
+
+export function useUpdateConnection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: ConnectionUpdate }) => {
+      const { data: result } = await api.put(`/connections/${id}`, data);
+      return result;
+    },
+    onSuccess: (_data, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["connections"] });
+      queryClient.invalidateQueries({ queryKey: ["connections", id] });
     },
   });
 }

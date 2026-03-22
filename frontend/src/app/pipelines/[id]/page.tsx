@@ -1,19 +1,31 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { usePipeline, useTriggerRun } from "@/hooks/usePipelines";
 import { useRuns } from "@/hooks/useRuns";
 import StatusBadge from "@/components/ui/StatusBadge";
-import Link from "next/link";
+import { useToast } from "@/components/ui/Toast";
 
 export default function PipelineDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: pipeline, isLoading } = usePipeline(id);
   const { data: runs } = useRuns(id);
   const triggerRun = useTriggerRun();
+  const toast = useToast();
 
   if (isLoading) return <div className="text-gray-500">Loading...</div>;
   if (!pipeline) return <div className="text-gray-500">Not found</div>;
+
+  const handleRun = async () => {
+    try {
+      await triggerRun.mutateAsync(pipeline.id);
+      toast.success(`Pipeline "${pipeline.name}" started`);
+    } catch {
+      toast.error("Failed to start pipeline");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -24,12 +36,21 @@ export default function PipelineDetailPage() {
             {pipeline.description || "No description"}
           </p>
         </div>
-        <button
-          onClick={() => triggerRun.mutate(pipeline.id)}
-          className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-        >
-          {triggerRun.isPending ? "Starting..." : "Run Now"}
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href={`/pipelines/${id}/edit`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit
+          </Link>
+          <button
+            onClick={handleRun}
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+          >
+            {triggerRun.isPending ? "Starting..." : "Run Now"}
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4">

@@ -1,13 +1,38 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { GitBranch, Plus, Trash2 } from "lucide-react";
 import { useDeletePipeline, usePipelines, useTriggerRun } from "@/hooks/usePipelines";
+import { useToast } from "@/components/ui/Toast";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 export default function PipelinesPage() {
   const { data: pipelines, isLoading } = usePipelines();
   const deletePipeline = useDeletePipeline();
   const triggerRun = useTriggerRun();
+  const toast = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deletePipeline.mutateAsync(deleteTarget.id);
+      toast.success(`Pipeline "${deleteTarget.name}" deleted`);
+    } catch {
+      toast.error("Failed to delete pipeline");
+    }
+    setDeleteTarget(null);
+  };
+
+  const handleRun = async (pipelineId: string, name: string) => {
+    try {
+      await triggerRun.mutateAsync(pipelineId);
+      toast.success(`Pipeline "${name}" started`);
+    } catch {
+      toast.error("Failed to start pipeline");
+    }
+  };
 
   return (
     <div>
@@ -51,7 +76,7 @@ export default function PipelinesPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => deletePipeline.mutate(pipeline.id)}
+                  onClick={() => setDeleteTarget({ id: pipeline.id, name: pipeline.name })}
                   className="text-gray-400 hover:text-red-500"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -64,10 +89,10 @@ export default function PipelinesPage() {
               )}
               <div className="mt-4 flex items-center justify-between">
                 <button
-                  onClick={() => triggerRun.mutate(pipeline.id)}
+                  onClick={() => handleRun(pipeline.id, pipeline.name)}
                   className="rounded bg-green-50 px-3 py-1 text-xs font-medium text-green-700 hover:bg-green-100"
                 >
-                  {triggerRun.isPending ? "Starting..." : "Run Now"}
+                  Run Now
                 </button>
                 <Link
                   href={`/pipelines/${pipeline.id}`}
@@ -91,6 +116,14 @@ export default function PipelinesPage() {
           )}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete pipeline"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

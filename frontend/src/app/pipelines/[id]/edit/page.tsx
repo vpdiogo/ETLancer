@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useConnections } from "@/hooks/useConnections";
-import { useCreatePipeline } from "@/hooks/usePipelines";
+import { usePipeline, useUpdatePipeline } from "@/hooks/usePipelines";
 import { useToast } from "@/components/ui/Toast";
 
 function tryParseJson(value: string): { ok: true; data: unknown } | { ok: false; error: string } {
@@ -14,10 +14,12 @@ function tryParseJson(value: string): { ok: true; data: unknown } | { ok: false;
   }
 }
 
-export default function NewPipelinePage() {
+export default function EditPipelinePage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { data: pipeline, isLoading } = usePipeline(id);
   const { data: connections } = useConnections();
-  const createPipeline = useCreatePipeline();
+  const updatePipeline = useUpdatePipeline();
   const toast = useToast();
 
   const [name, setName] = useState("");
@@ -25,11 +27,28 @@ export default function NewPipelinePage() {
   const [sourceConnectionId, setSourceConnectionId] = useState("");
   const [extractionConfig, setExtractionConfig] = useState("{}");
   const [transformConfig, setTransformConfig] = useState("[]");
-  const [loadConfig, setLoadConfig] = useState(
-    '{"target_table": "my_data", "if_exists": "replace"}'
-  );
+  const [loadConfig, setLoadConfig] = useState("{}");
   const [schedule, setSchedule] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (pipeline && !initialized) {
+      setName(pipeline.name);
+      setDescription(pipeline.description || "");
+      setSourceConnectionId(pipeline.source_connection_id);
+      setExtractionConfig(JSON.stringify(pipeline.extraction_config || {}, null, 2));
+      setTransformConfig(JSON.stringify(pipeline.transform_config || [], null, 2));
+      setLoadConfig(JSON.stringify(pipeline.load_config, null, 2));
+      setSchedule(pipeline.schedule || "");
+      setIsActive(pipeline.is_active);
+      setInitialized(true);
+    }
+  }, [pipeline, initialized]);
+
+  if (isLoading) return <div className="text-gray-500">Loading...</div>;
+  if (!pipeline) return <div className="text-gray-500">Not found</div>;
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -49,19 +68,23 @@ export default function NewPipelinePage() {
     e.preventDefault();
     if (!validate()) return;
     try {
-      await createPipeline.mutateAsync({
-        name,
-        description: description || undefined,
-        source_connection_id: sourceConnectionId,
-        extraction_config: JSON.parse(extractionConfig),
-        transform_config: JSON.parse(transformConfig),
-        load_config: JSON.parse(loadConfig),
-        schedule: schedule || undefined,
+      await updatePipeline.mutateAsync({
+        id,
+        data: {
+          name,
+          description: description || undefined,
+          source_connection_id: sourceConnectionId,
+          extraction_config: JSON.parse(extractionConfig),
+          transform_config: JSON.parse(transformConfig),
+          load_config: JSON.parse(loadConfig),
+          schedule: schedule || undefined,
+          is_active: isActive,
+        },
       });
-      toast.success(`Pipeline "${name}" created`);
-      router.push("/pipelines");
+      toast.success(`Pipeline "${name}" updated`);
+      router.push(`/pipelines/${id}`);
     } catch {
-      toast.error("Failed to create pipeline. Check your input.");
+      toast.error("Failed to update pipeline");
     }
   };
 
@@ -74,7 +97,7 @@ export default function NewPipelinePage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900">New Pipeline</h1>
+      <h1 className="text-2xl font-bold text-gray-900">Edit Pipeline</h1>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <div>
@@ -161,6 +184,17 @@ export default function NewPipelinePage() {
           />
         </div>
 
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="is_active"
+            checked={isActive}
+            onChange={(e) => setIsActive(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <label htmlFor="is_active" className="text-sm font-medium text-gray-700">Active</label>
+        </div>
+
         <div className="flex gap-3">
           <button
             type="button"
@@ -171,10 +205,10 @@ export default function NewPipelinePage() {
           </button>
           <button
             type="submit"
-            disabled={createPipeline.isPending}
+            disabled={updatePipeline.isPending}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {createPipeline.isPending ? "Creating..." : "Create Pipeline"}
+            {updatePipeline.isPending ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
