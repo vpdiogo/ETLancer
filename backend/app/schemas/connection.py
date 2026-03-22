@@ -26,8 +26,13 @@ class ConnectionUpdate(BaseModel):
     is_active: bool | None = None
 
 
-class ConnectionRead(ConnectionBase):
+class ConnectionRead(BaseModel):
     id: uuid.UUID
+    name: str
+    connector_type: str
+    config: dict
+    description: str | None = None
+    is_active: bool = True
     created_at: datetime
     updated_at: datetime
 

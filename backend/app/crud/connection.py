@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.encryption import encrypt_credentials
 from app.models.connection import Connection
 from app.schemas.connection import ConnectionCreate, ConnectionUpdate
 
@@ -10,7 +11,10 @@ from app.schemas.connection import ConnectionCreate, ConnectionUpdate
 async def create_connection(
     db: AsyncSession, data: ConnectionCreate
 ) -> Connection:
-    conn = Connection(**data.model_dump())
+    dump = data.model_dump()
+    if dump.get("credentials"):
+        dump["credentials"] = encrypt_credentials(dump["credentials"])
+    conn = Connection(**dump)
     db.add(conn)
     await db.commit()
     await db.refresh(conn)
@@ -53,6 +57,8 @@ async def update_connection(
     if not conn:
         return None
     for field, value in data.model_dump(exclude_unset=True).items():
+        if field == "credentials" and value is not None:
+            value = encrypt_credentials(value)
         setattr(conn, field, value)
     await db.commit()
     await db.refresh(conn)

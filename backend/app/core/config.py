@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     PREFECT_API_URL: str = "http://prefect-server:4200/api"
     PREFECT_API_KEY: str = ""
 
+    API_KEY: str = "change-me"
+    CORS_ORIGINS: str = "http://localhost:3000"
+    ENCRYPTION_KEY: str = ""
+
     @computed_field
     @property
     def DATABASE_URL(self) -> str:

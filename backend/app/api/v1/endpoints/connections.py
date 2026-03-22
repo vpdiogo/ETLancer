@@ -76,12 +76,18 @@ async def test_connection(
         raise HTTPException(status_code=404, detail="Connection not found")
 
     from app.connectors.registry import get_connector
+    from app.core.encryption import decrypt_credentials
 
     try:
+        creds = (
+            decrypt_credentials(conn.credentials)
+            if conn.credentials
+            else {}
+        )
         connector = get_connector(
             conn.connector_type,
             conn.config,
-            conn.credentials,
+            creds,
         )
         await connector.test_connection()
         return {"status": "ok", "message": "Connection successful"}

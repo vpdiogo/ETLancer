@@ -23,13 +23,16 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     environment:
       POSTGRES_HOST: db
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-etlancer}
       PREFECT_API_URL: http://prefect-server:4200/api
+      API_KEY: ${API_KEY:-dev-api-key-change-me}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-cYFNSivrrSI20TZVNxKKJvgJsfx9sDvtAtljDMUAtTc=}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     depends_on:
       db:
         condition: service_healthy
@@ -50,6 +53,7 @@ services:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_API_KEY: ${API_KEY:-dev-api-key-change-me}
     depends_on:
       - backend
 

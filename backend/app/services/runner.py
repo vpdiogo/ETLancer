@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from app.connectors.registry import get_connector
 from app.core.database import AsyncSessionLocal
+from app.core.encryption import decrypt_credentials
 from app.crud.pipeline_run import update_pipeline_run
 from app.models.pipeline import Pipeline
 from app.models.pipeline_run import PipelineRun
@@ -24,10 +25,17 @@ async def _execute_run(pipeline: Pipeline, run: PipelineRun) -> None:
                 started_at=datetime.now(timezone.utc),
             )
 
+            creds = (
+                decrypt_credentials(
+                    pipeline.source_connection.credentials
+                )
+                if pipeline.source_connection.credentials
+                else {}
+            )
             connector = get_connector(
                 pipeline.source_connection.connector_type,
                 pipeline.source_connection.config,
-                pipeline.source_connection.credentials,
+                creds,
             )
 
             df = await connector.extract(pipeline.extraction_config or {})

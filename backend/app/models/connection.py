@@ -17,7 +17,7 @@ class Connection(Base):
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     connector_type: Mapped[str] = mapped_column(String(50), nullable=False)
     config: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
-    credentials: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    credentials: Mapped[str | None] = mapped_column(Text, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(
