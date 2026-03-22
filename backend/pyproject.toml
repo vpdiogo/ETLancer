@@ -30,6 +30,7 @@ dev = [
     "black>=24.0.0",
     "isort>=5.13.0",
     "respx>=0.22.0",
+    "aiosqlite>=0.20.0",
 ]
 
 [tool.black]
