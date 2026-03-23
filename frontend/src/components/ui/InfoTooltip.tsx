@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Info, X } from "lucide-react";
 import { createPortal } from "react-dom";
 
@@ -10,9 +10,20 @@ interface InfoTooltipProps {
 }
 
 export default function InfoTooltip({ title, children }: InfoTooltipProps) {
-  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  const open = pos !== null;
+
+  const handleToggle = useCallback(() => {
+    if (open) {
+      setPos(null);
+    } else if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPos({ top: rect.top, left: rect.right + 8 });
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -23,11 +34,11 @@ export default function InfoTooltip({ title, children }: InfoTooltipProps) {
         buttonRef.current &&
         !buttonRef.current.contains(e.target as Node)
       ) {
-        setOpen(false);
+        setPos(null);
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") setPos(null);
     };
     document.addEventListener("mousedown", handleClick);
     document.addEventListener("keydown", handleEsc);
@@ -37,30 +48,18 @@ export default function InfoTooltip({ title, children }: InfoTooltipProps) {
     };
   }, [open]);
 
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    if (open && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPos({
-        top: rect.top,
-        left: rect.right + 8,
-      });
-    }
-  }, [open]);
-
   return (
     <>
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={handleToggle}
         className="inline-flex items-center ml-1.5 text-gray-400 hover:text-blue-500 transition-colors"
         aria-label={`Info: ${title}`}
       >
         <Info className="h-4 w-4" />
       </button>
-      {open &&
+      {pos &&
         createPortal(
           <div
             ref={panelRef}
@@ -71,7 +70,7 @@ export default function InfoTooltip({ title, children }: InfoTooltipProps) {
               <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => setPos(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 <X className="h-3.5 w-3.5" />
