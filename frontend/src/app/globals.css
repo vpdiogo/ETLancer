@@ -35,3 +35,7 @@ input::placeholder,
 textarea::placeholder {
   color: #9ca3af;
 }
+
+pre {
+  color: #171717;
+}
