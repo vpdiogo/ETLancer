@@ -37,7 +37,7 @@ def _apply_filter(
         "gte": lambda col, v: col >= v,
         "lt": lambda col, v: col < v,
         "lte": lambda col, v: col <= v,
-        "contains": lambda col, v: col.str.contains(v, na=False),
+        "contains": lambda col, v: col.str.contains(v, na=False, regex=False),
     }
     if operator not in ops:
         raise ValueError(f"Unknown filter operator: {operator}")

@@ -5,14 +5,7 @@ import { useState } from "react";
 import { useConnections } from "@/hooks/useConnections";
 import { useCreatePipeline } from "@/hooks/usePipelines";
 import { useToast } from "@/components/ui/Toast";
-
-function tryParseJson(value: string): { ok: true; data: unknown } | { ok: false; error: string } {
-  try {
-    return { ok: true, data: JSON.parse(value) };
-  } catch (e) {
-    return { ok: false, error: (e as Error).message };
-  }
-}
+import { tryParseJson } from "@/lib/utils";
 
 export default function NewPipelinePage() {
   const router = useRouter();

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { FileSpreadsheet, FileText, Globe } from "lucide-react";
 import { useCreateConnection } from "@/hooks/useConnections";
 import { useToast } from "@/components/ui/Toast";
+import { tryParseJson } from "@/lib/utils";
 
 const connectorTypes = [
   {
@@ -26,14 +27,6 @@ const connectorTypes = [
     icon: FileSpreadsheet,
   },
 ];
-
-function tryParseJson(value: string): { ok: true; data: unknown } | { ok: false; error: string } {
-  try {
-    return { ok: true, data: JSON.parse(value) };
-  } catch (e) {
-    return { ok: false, error: (e as Error).message };
-  }
-}
 
 export default function NewConnectionPage() {
   const router = useRouter();

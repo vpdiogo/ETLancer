@@ -4,14 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useConnection, useUpdateConnection } from "@/hooks/useConnections";
 import { useToast } from "@/components/ui/Toast";
-
-function tryParseJson(value: string): { ok: true; data: unknown } | { ok: false; error: string } {
-  try {
-    return { ok: true, data: JSON.parse(value) };
-  } catch (e) {
-    return { ok: false, error: (e as Error).message };
-  }
-}
+import { tryParseJson } from "@/lib/utils";
 
 export default function EditConnectionPage() {
   const { id } = useParams<{ id: string }>();

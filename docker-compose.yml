@@ -31,7 +31,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-etlancer}
       PREFECT_API_URL: http://prefect-server:4200/api
       API_KEY: ${API_KEY:-dev-api-key-change-me}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-cYFNSivrrSI20TZVNxKKJvgJsfx9sDvtAtljDMUAtTc=}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-jRYPv-WeChwu4OR2A9tswzNJe8MK32NZ6iS0y_p5A98=}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     depends_on:
       db:

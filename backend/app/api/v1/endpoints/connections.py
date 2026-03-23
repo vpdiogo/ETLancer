@@ -62,7 +62,13 @@ async def update_connection(
 async def delete_connection(
     connection_id: uuid.UUID, db: AsyncSession = Depends(get_db)
 ):
-    deleted = await crud.delete_connection(db, connection_id)
+    try:
+        deleted = await crud.delete_connection(db, connection_id)
+    except Exception:
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot delete: connection is used by existing pipelines",
+        )
     if not deleted:
         raise HTTPException(status_code=404, detail="Connection not found")
 

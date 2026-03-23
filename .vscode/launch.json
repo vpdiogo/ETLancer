@@ -22,7 +22,7 @@
       "cwd": "${workspaceFolder}/backend",
       "env": {
         "API_KEY": "test-api-key",
-        "ENCRYPTION_KEY": "cYFNSivrrSI20TZVNxKKJvgJsfx9sDvtAtljDMUAtTc="
+        "ENCRYPTION_KEY": "jRYPv-WeChwu4OR2A9tswzNJe8MK32NZ6iS0y_p5A98="
       }
     },
     {

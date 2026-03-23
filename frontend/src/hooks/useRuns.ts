@@ -12,7 +12,14 @@ export function useRuns(pipelineId?: string, status?: string) {
       const { data } = await api.get("/runs/", { params });
       return data;
     },
-    refetchInterval: 5000,
+    refetchInterval: (query) => {
+      const runs = query.state.data;
+      if (!runs) return 5000;
+      const hasActive = runs.some(
+        (r) => r.status === "pending" || r.status === "running",
+      );
+      return hasActive ? 5000 : false;
+    },
   });
 }
 

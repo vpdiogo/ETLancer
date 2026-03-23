@@ -24,19 +24,15 @@ class GoogleSheetsConnector(BaseConnector):
 
     def _get_client(self):
         import gspread
-        from oauth2client.service_account import (
-            ServiceAccountCredentials,
-        )
+        from google.oauth2.service_account import Credentials
 
-        scope = [
+        scopes = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive",
         ]
-        creds = (
-            ServiceAccountCredentials.from_json_keyfile_dict(
-                self.credentials["service_account_json"],
-                scope,
-            )
+        creds = Credentials.from_service_account_info(
+            self.credentials["service_account_json"],
+            scopes=scopes,
         )
         return gspread.authorize(creds)
 
