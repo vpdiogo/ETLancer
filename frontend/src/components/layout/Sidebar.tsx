@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BookOpen,
   Database,
   GitBranch,
   Home,
@@ -47,6 +48,19 @@ export default function Sidebar() {
           );
         })}
       </nav>
+      <div className="border-t border-gray-800 px-3 py-3">
+        <Link
+          href="/docs"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            pathname === "/docs"
+              ? "bg-gray-800 text-white"
+              : "text-gray-400 hover:bg-gray-800 hover:text-white"
+          }`}
+        >
+          <BookOpen className="h-5 w-5" />
+          Documentation
+        </Link>
+      </div>
     </div>
   );
 }

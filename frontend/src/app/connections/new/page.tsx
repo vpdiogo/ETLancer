@@ -6,6 +6,7 @@ import { FileSpreadsheet, FileText, Globe } from "lucide-react";
 import { useCreateConnection } from "@/hooks/useConnections";
 import { useToast } from "@/components/ui/Toast";
 import { tryParseJson } from "@/lib/utils";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 const connectorTypes = [
   {
@@ -27,6 +28,21 @@ const connectorTypes = [
     icon: FileSpreadsheet,
   },
 ];
+
+const configHints: Record<string, { config: string; credentials: string }> = {
+  rest_api: {
+    config: '{"base_url": "https://api.example.com"}',
+    credentials: '{"api_key": "your-key", "header_name": "Authorization", "header_prefix": "Bearer "}',
+  },
+  csv: {
+    config: '{"source_type": "url", "source_url": "https://data.example.com/file.csv"}',
+    credentials: "Not needed for CSV",
+  },
+  google_sheets: {
+    config: '{"spreadsheet_id": "1BxiMVs0XRA5..."}',
+    credentials: '{"service_account_json": { ... }}',
+  },
+};
 
 export default function NewConnectionPage() {
   const router = useRouter();
@@ -68,6 +84,8 @@ export default function NewConnectionPage() {
       toast.error("Failed to create connection. Check your input.");
     }
   };
+
+  const hints = configHints[selectedType];
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -138,8 +156,14 @@ export default function NewConnectionPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="flex items-center text-sm font-medium text-gray-700">
               Config (JSON)
+              {hints && (
+                <InfoTooltip title="Config format">
+                  <p>Example for {selectedType}:</p>
+                  <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{hints.config}</pre>
+                </InfoTooltip>
+              )}
             </label>
             <textarea
               value={config}
@@ -150,13 +174,20 @@ export default function NewConnectionPage() {
                   ? "border-red-300 focus:border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               }`}
-              placeholder='{"base_url": "https://api.example.com"}'
+              placeholder={hints?.config || '{"base_url": "https://api.example.com"}'}
             />
             {errors.config && <p className="mt-1 text-xs text-red-600">{errors.config}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="flex items-center text-sm font-medium text-gray-700">
               Credentials (JSON)
+              {hints && (
+                <InfoTooltip title="Credentials format">
+                  <p>Example for {selectedType}:</p>
+                  <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{hints.credentials}</pre>
+                  <p className="mt-1">Leave as {"{}"} for public APIs without authentication.</p>
+                </InfoTooltip>
+              )}
             </label>
             <textarea
               value={credentials}

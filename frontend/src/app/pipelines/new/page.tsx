@@ -6,6 +6,7 @@ import { useConnections } from "@/hooks/useConnections";
 import { useCreatePipeline } from "@/hooks/usePipelines";
 import { useToast } from "@/components/ui/Toast";
 import { tryParseJson } from "@/lib/utils";
+import InfoTooltip from "@/components/ui/InfoTooltip";
 
 export default function NewPipelinePage() {
   const router = useRouter();
@@ -109,7 +110,18 @@ export default function NewPipelinePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Extraction Config (JSON)</label>
+          <label className="flex items-center text-sm font-medium text-gray-700">
+            Extraction Config (JSON)
+            <InfoTooltip title="Extraction Config">
+              <p>Defines what to extract from the source.</p>
+              <p className="mt-1 font-semibold">REST API example:</p>
+              <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{'{"endpoint": "/users", "method": "GET"}'}</pre>
+              <p className="mt-1 font-semibold">With pagination:</p>
+              <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{'{"endpoint": "/items", "pagination": {"type": "offset", "page_size": 100}}'}</pre>
+              <p className="mt-1 font-semibold">CSV example:</p>
+              <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{'{"delimiter": ",", "has_header": true}'}</pre>
+            </InfoTooltip>
+          </label>
           <textarea
             value={extractionConfig}
             onChange={(e) => { setExtractionConfig(e.target.value); setErrors((p) => ({ ...p, extraction: "" })); }}
@@ -120,7 +132,21 @@ export default function NewPipelinePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Transform Config (JSON array)</label>
+          <label className="flex items-center text-sm font-medium text-gray-700">
+            Transform Config (JSON array)
+            <InfoTooltip title="Transform Config">
+              <p>A list of transform steps applied in order.</p>
+              <p className="mt-1 font-semibold">Available types:</p>
+              <ul className="mt-1 list-disc pl-4 space-y-0.5">
+                <li><strong>rename</strong> — rename columns</li>
+                <li><strong>filter</strong> — filter rows (eq, ne, gt, gte, lt, lte, contains)</li>
+                <li><strong>cast</strong> — change column type (str, int, float, bool)</li>
+                <li><strong>drop</strong> — remove columns</li>
+              </ul>
+              <p className="mt-1 font-semibold">Example:</p>
+              <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{'[{"type": "drop", "columns": ["temp"]}, {"type": "filter", "column": "age", "operator": "gt", "value": 18}]'}</pre>
+            </InfoTooltip>
+          </label>
           <textarea
             value={transformConfig}
             onChange={(e) => { setTransformConfig(e.target.value); setErrors((p) => ({ ...p, transform: "" })); }}
@@ -131,7 +157,19 @@ export default function NewPipelinePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Load Config (JSON)</label>
+          <label className="flex items-center text-sm font-medium text-gray-700">
+            Load Config (JSON)
+            <InfoTooltip title="Load Config">
+              <p>Defines where to save data in PostgreSQL.</p>
+              <p className="mt-1 font-semibold">Fields:</p>
+              <ul className="mt-1 list-disc pl-4 space-y-0.5">
+                <li><strong>target_table</strong> — table name (required)</li>
+                <li><strong>if_exists</strong> — &quot;replace&quot;, &quot;append&quot;, or &quot;fail&quot;</li>
+                <li><strong>schema</strong> — database schema (default: &quot;public&quot;)</li>
+              </ul>
+              <pre className="mt-1 rounded bg-gray-100 p-2 font-mono">{'{"target_table": "users", "if_exists": "replace"}'}</pre>
+            </InfoTooltip>
+          </label>
           <textarea
             value={loadConfig}
             onChange={(e) => { setLoadConfig(e.target.value); setErrors((p) => ({ ...p, load: "" })); }}
@@ -142,8 +180,19 @@ export default function NewPipelinePage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="flex items-center text-sm font-medium text-gray-700">
             Schedule (cron expression, optional)
+            <InfoTooltip title="Cron Schedule">
+              <p>Standard cron expression for automatic runs.</p>
+              <p className="mt-1 font-semibold">Examples:</p>
+              <ul className="mt-1 list-disc pl-4 space-y-0.5">
+                <li><code>0 */6 * * *</code> — every 6 hours</li>
+                <li><code>0 9 * * 1-5</code> — weekdays at 9am</li>
+                <li><code>0 0 * * *</code> — daily at midnight</li>
+                <li><code>*/30 * * * *</code> — every 30 minutes</li>
+              </ul>
+              <p className="mt-1">Leave empty for manual-only runs.</p>
+            </InfoTooltip>
           </label>
           <input
             type="text"
