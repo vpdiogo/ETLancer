@@ -33,11 +33,7 @@ async def get_pipelines(
     query = select(Pipeline)
     if is_active is not None:
         query = query.where(Pipeline.is_active == is_active)
-    query = (
-        query.offset(skip)
-        .limit(limit)
-        .order_by(Pipeline.created_at.desc())
-    )
+    query = query.offset(skip).limit(limit).order_by(Pipeline.created_at.desc())
     result = await db.execute(query)
     return list(result.scalars().all())
 

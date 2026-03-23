@@ -14,9 +14,7 @@ async def create_deployment(
     from app.orchestration.flows import run_etl_pipeline
 
     async with AsyncSessionLocal() as db:
-        run = await create_pipeline_run(
-            db, uuid.UUID(pipeline_id)
-        )
+        run = await create_pipeline_run(db, uuid.UUID(pipeline_id))
         run_id = str(run.id)
 
     deployment_id = await run_etl_pipeline.to_deployment(

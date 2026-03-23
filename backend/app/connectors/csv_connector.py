@@ -12,12 +12,9 @@ ALLOWED_CSV_DIRS = ["/data", "/tmp"]
 
 def _validate_file_path(file_path: str) -> Path:
     path = Path(file_path).resolve()
-    if not any(
-        str(path).startswith(d) for d in ALLOWED_CSV_DIRS
-    ):
+    if not any(str(path).startswith(d) for d in ALLOWED_CSV_DIRS):
         raise PermissionError(
-            f"Access denied: file path must be under "
-            f"{ALLOWED_CSV_DIRS}"
+            f"Access denied: file path must be under " f"{ALLOWED_CSV_DIRS}"
         )
     return path
 
@@ -47,9 +44,7 @@ class CsvConnector(BaseConnector):
         elif source_type == "file":
             path = _validate_file_path(self.config["file_path"])
             if not path.exists():
-                raise FileNotFoundError(
-                    f"CSV file not found: {path}"
-                )
+                raise FileNotFoundError(f"CSV file not found: {path}")
         return True
 
     async def extract(self, extraction_config: dict) -> pd.DataFrame:

@@ -12,9 +12,7 @@ class BaseConnector(ABC):
     async def test_connection(self) -> bool: ...
 
     @abstractmethod
-    async def extract(
-        self, extraction_config: dict
-    ) -> pd.DataFrame: ...
+    async def extract(self, extraction_config: dict) -> pd.DataFrame: ...
 
     @classmethod
     @abstractmethod

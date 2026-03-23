@@ -60,9 +60,7 @@ async def setup_db():
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=app)
-    async with AsyncClient(
-        transport=transport, base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
 
@@ -82,7 +80,5 @@ async def unauthenticated_client(
     unauthenticated_app,
 ) -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=unauthenticated_app)
-    async with AsyncClient(
-        transport=transport, base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac

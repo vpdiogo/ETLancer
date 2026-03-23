@@ -26,9 +26,7 @@ def test_empty_list(sample_df):
 
 
 def test_rename_columns(sample_df):
-    config = [
-        {"type": "rename", "mapping": {"name": "full_name"}}
-    ]
+    config = [{"type": "rename", "mapping": {"name": "full_name"}}]
     result = apply_transforms(sample_df, config)
     assert "full_name" in result.columns
     assert "name" not in result.columns

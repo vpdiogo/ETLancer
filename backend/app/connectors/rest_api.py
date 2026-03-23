@@ -7,7 +7,12 @@ import pandas as pd
 from app.connectors.base import BaseConnector
 from app.connectors.registry import register_connector
 
-BLOCKED_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "metadata.google.internal"}
+BLOCKED_HOSTS = {
+    "localhost",
+    "127.0.0.1",
+    "0.0.0.0",
+    "metadata.google.internal",
+}
 
 
 def _validate_url(url: str) -> None:
@@ -18,9 +23,7 @@ def _validate_url(url: str) -> None:
     try:
         ip = ipaddress.ip_address(hostname)
         if ip.is_private or ip.is_loopback or ip.is_link_local:
-            raise ValueError(
-                f"Blocked private/internal IP: {ip}"
-            )
+            raise ValueError(f"Blocked private/internal IP: {ip}")
     except ValueError as e:
         if "Blocked" in str(e):
             raise
@@ -134,12 +137,8 @@ class RestApiConnector(BaseConnector):
     def _build_headers(self) -> dict:
         headers = {}
         if self.credentials.get("api_key"):
-            header_name = self.credentials.get(
-                "header_name", "Authorization"
-            )
-            header_prefix = self.credentials.get(
-                "header_prefix", "Bearer "
-            )
+            header_name = self.credentials.get("header_name", "Authorization")
+            header_prefix = self.credentials.get("header_prefix", "Bearer ")
             api_key = self.credentials["api_key"]
             headers[header_name] = f"{header_prefix}{api_key}"
         return headers

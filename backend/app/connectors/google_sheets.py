@@ -38,9 +38,7 @@ class GoogleSheetsConnector(BaseConnector):
 
     async def test_connection(self) -> bool:
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None, self._test_connection_sync
-        )
+        await loop.run_in_executor(None, self._test_connection_sync)
         return True
 
     def _test_connection_sync(self) -> None:
@@ -48,18 +46,14 @@ class GoogleSheetsConnector(BaseConnector):
         spreadsheet_id = self.config["spreadsheet_id"]
         client.open_by_key(spreadsheet_id)
 
-    async def extract(
-        self, extraction_config: dict
-    ) -> pd.DataFrame:
+    async def extract(self, extraction_config: dict) -> pd.DataFrame:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(
             None,
             partial(self._extract_sync, extraction_config),
         )
 
-    def _extract_sync(
-        self, extraction_config: dict
-    ) -> pd.DataFrame:
+    def _extract_sync(self, extraction_config: dict) -> pd.DataFrame:
         client = self._get_client()
         spreadsheet_id = self.config["spreadsheet_id"]
         workbook = client.open_by_key(spreadsheet_id)

@@ -38,9 +38,7 @@ async def get_pipeline_runs(
     if status:
         query = query.where(PipelineRun.status == status)
     query = (
-        query.offset(skip)
-        .limit(limit)
-        .order_by(PipelineRun.created_at.desc())
+        query.offset(skip).limit(limit).order_by(PipelineRun.created_at.desc())
     )
     result = await db.execute(query)
     return list(result.scalars().all())

@@ -1,47 +1,35 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useConnections } from "@/hooks/useConnections";
 import { usePipeline, useUpdatePipeline } from "@/hooks/usePipelines";
 import { useToast } from "@/components/ui/Toast";
 import { tryParseJson } from "@/lib/utils";
+import { Connection, Pipeline } from "@/lib/types";
 
-export default function EditPipelinePage() {
-  const { id } = useParams<{ id: string }>();
+function EditPipelineForm({
+  pipeline,
+  connections,
+  id,
+}: {
+  pipeline: Pipeline;
+  connections: Connection[] | undefined;
+  id: string;
+}) {
   const router = useRouter();
-  const { data: pipeline, isLoading } = usePipeline(id);
-  const { data: connections } = useConnections();
   const updatePipeline = useUpdatePipeline();
   const toast = useToast();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [sourceConnectionId, setSourceConnectionId] = useState("");
-  const [extractionConfig, setExtractionConfig] = useState("{}");
-  const [transformConfig, setTransformConfig] = useState("[]");
-  const [loadConfig, setLoadConfig] = useState("{}");
-  const [schedule, setSchedule] = useState("");
-  const [isActive, setIsActive] = useState(true);
+  const [name, setName] = useState(pipeline.name);
+  const [description, setDescription] = useState(pipeline.description || "");
+  const [sourceConnectionId, setSourceConnectionId] = useState(pipeline.source_connection_id);
+  const [extractionConfig, setExtractionConfig] = useState(JSON.stringify(pipeline.extraction_config || {}, null, 2));
+  const [transformConfig, setTransformConfig] = useState(JSON.stringify(pipeline.transform_config || [], null, 2));
+  const [loadConfig, setLoadConfig] = useState(JSON.stringify(pipeline.load_config, null, 2));
+  const [schedule, setSchedule] = useState(pipeline.schedule || "");
+  const [isActive, setIsActive] = useState(pipeline.is_active);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    if (pipeline && !initialized) {
-      setName(pipeline.name);
-      setDescription(pipeline.description || "");
-      setSourceConnectionId(pipeline.source_connection_id);
-      setExtractionConfig(JSON.stringify(pipeline.extraction_config || {}, null, 2));
-      setTransformConfig(JSON.stringify(pipeline.transform_config || [], null, 2));
-      setLoadConfig(JSON.stringify(pipeline.load_config, null, 2));
-      setSchedule(pipeline.schedule || "");
-      setIsActive(pipeline.is_active);
-      setInitialized(true);
-    }
-  }, [pipeline, initialized]);
-
-  if (isLoading) return <div className="text-gray-500">Loading...</div>;
-  if (!pipeline) return <div className="text-gray-500">Not found</div>;
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -207,4 +195,15 @@ export default function EditPipelinePage() {
       </form>
     </div>
   );
+}
+
+export default function EditPipelinePage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: pipeline, isLoading } = usePipeline(id);
+  const { data: connections } = useConnections();
+
+  if (isLoading) return <div className="text-gray-500">Loading...</div>;
+  if (!pipeline) return <div className="text-gray-500">Not found</div>;
+
+  return <EditPipelineForm pipeline={pipeline} connections={connections} id={id} />;
 }

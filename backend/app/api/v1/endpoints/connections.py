@@ -86,9 +86,7 @@ async def test_connection(
 
     try:
         creds = (
-            decrypt_credentials(conn.credentials)
-            if conn.credentials
-            else {}
+            decrypt_credentials(conn.credentials) if conn.credentials else {}
         )
         connector = get_connector(
             conn.connector_type,

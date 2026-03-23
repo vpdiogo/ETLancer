@@ -1,38 +1,22 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useConnection, useUpdateConnection } from "@/hooks/useConnections";
 import { useToast } from "@/components/ui/Toast";
 import { tryParseJson } from "@/lib/utils";
 
-export default function EditConnectionPage() {
-  const { id } = useParams<{ id: string }>();
+function EditConnectionForm({ connection, id }: { connection: { name: string; description?: string | null; config: Record<string, unknown>; is_active: boolean }; id: string }) {
   const router = useRouter();
-  const { data: connection, isLoading } = useConnection(id);
   const updateConnection = useUpdateConnection();
   const toast = useToast();
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [config, setConfig] = useState("{}");
+  const [name, setName] = useState(connection.name);
+  const [description, setDescription] = useState(connection.description || "");
+  const [config, setConfig] = useState(JSON.stringify(connection.config, null, 2));
   const [credentials, setCredentials] = useState("{}");
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(connection.is_active);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [initialized, setInitialized] = useState(false);
-
-  useEffect(() => {
-    if (connection && !initialized) {
-      setName(connection.name);
-      setDescription(connection.description || "");
-      setConfig(JSON.stringify(connection.config, null, 2));
-      setIsActive(connection.is_active);
-      setInitialized(true);
-    }
-  }, [connection, initialized]);
-
-  if (isLoading) return <div className="text-gray-500">Loading...</div>;
-  if (!connection) return <div className="text-gray-500">Not found</div>;
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -158,4 +142,14 @@ export default function EditConnectionPage() {
       </div>
     </div>
   );
+}
+
+export default function EditConnectionPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: connection, isLoading } = useConnection(id);
+
+  if (isLoading) return <div className="text-gray-500">Loading...</div>;
+  if (!connection) return <div className="text-gray-500">Not found</div>;
+
+  return <EditConnectionForm connection={connection} id={id} />;
 }

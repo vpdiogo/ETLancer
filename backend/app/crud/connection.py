@@ -25,9 +25,7 @@ async def get_connection(
     db: AsyncSession, connection_id: uuid.UUID
 ) -> Connection | None:
     result = await db.execute(
-        select(Connection).where(
-            Connection.id == connection_id
-        )
+        select(Connection).where(Connection.id == connection_id)
     )
     return result.scalar_one_or_none()
 
@@ -42,9 +40,7 @@ async def get_connections(
     if connector_type:
         query = query.where(Connection.connector_type == connector_type)
     query = (
-        query.offset(skip)
-        .limit(limit)
-        .order_by(Connection.created_at.desc())
+        query.offset(skip).limit(limit).order_by(Connection.created_at.desc())
     )
     result = await db.execute(query)
     return list(result.scalars().all())

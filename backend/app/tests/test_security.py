@@ -4,9 +4,7 @@ from httpx import ASGITransport, AsyncClient
 
 @pytest.mark.asyncio
 async def test_no_auth_returns_403(unauthenticated_client: AsyncClient):
-    response = await unauthenticated_client.get(
-        "/api/v1/connections/"
-    )
+    response = await unauthenticated_client.get("/api/v1/connections/")
     assert response.status_code == 401
 
 

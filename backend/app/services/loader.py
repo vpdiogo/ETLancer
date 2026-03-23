@@ -5,7 +5,12 @@ from sqlalchemy import create_engine
 
 from app.core.config import settings
 
-RESERVED_TABLES = {"connections", "pipelines", "pipeline_runs", "alembic_version"}
+RESERVED_TABLES = {
+    "connections",
+    "pipelines",
+    "pipeline_runs",
+    "alembic_version",
+}
 TABLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 _engine = create_engine(settings.DATABASE_URL)
@@ -24,14 +29,10 @@ def load_to_database(df: pd.DataFrame, load_config: dict) -> int:
     schema = load_config.get("schema", "public")
 
     if target_table.lower() in RESERVED_TABLES:
-        raise ValueError(
-            f"Cannot write to reserved table: {target_table}"
-        )
+        raise ValueError(f"Cannot write to reserved table: {target_table}")
 
     if not TABLE_NAME_PATTERN.match(target_table):
-        raise ValueError(
-            f"Invalid table name: {target_table}"
-        )
+        raise ValueError(f"Invalid table name: {target_table}")
 
     if not TABLE_NAME_PATTERN.match(schema):
         raise ValueError(f"Invalid schema name: {schema}")

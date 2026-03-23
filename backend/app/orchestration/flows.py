@@ -18,9 +18,7 @@ from app.orchestration.tasks import (
 
 
 @flow(name="etl_pipeline_flow")
-async def run_etl_pipeline(
-    pipeline_id: str, run_id: str
-) -> None:
+async def run_etl_pipeline(pipeline_id: str, run_id: str) -> None:
     logger = get_run_logger()
     pid = uuid.UUID(pipeline_id)
     rid = uuid.UUID(run_id)
@@ -33,9 +31,7 @@ async def run_etl_pipeline(
         )
         pipeline = result.scalar_one_or_none()
         if not pipeline:
-            raise ValueError(
-                f"Pipeline {pipeline_id} not found"
-            )
+            raise ValueError(f"Pipeline {pipeline_id} not found")
 
         connector_type = pipeline.source_connection.connector_type
         config = pipeline.source_connection.config
@@ -51,21 +47,13 @@ async def run_etl_pipeline(
             rid,
             status="running",
             started_at=datetime.now(timezone.utc),
-            prefect_flow_run_id=str(prefect_run_id)
-            if prefect_run_id
-            else None,
+            prefect_flow_run_id=str(prefect_run_id) if prefect_run_id else None,
         )
 
     try:
-        logger.info(
-            f"Starting ETL for pipeline: {pipeline_name}"
-        )
+        logger.info(f"Starting ETL for pipeline: {pipeline_name}")
 
-        creds = (
-            decrypt_credentials(credentials_raw)
-            if credentials_raw
-            else {}
-        )
+        creds = decrypt_credentials(credentials_raw) if credentials_raw else {}
 
         df = await extract_data(
             connector_type=connector_type,

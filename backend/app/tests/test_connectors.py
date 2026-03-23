@@ -103,9 +103,7 @@ class TestRestApiConnector:
     @pytest.mark.asyncio
     @respx.mock
     async def test_test_connection_success(self):
-        respx.get("https://api.test.com").mock(
-            return_value=Response(200)
-        )
+        respx.get("https://api.test.com").mock(return_value=Response(200))
 
         connector = RestApiConnector(
             config={"base_url": "https://api.test.com"},
@@ -116,9 +114,7 @@ class TestRestApiConnector:
     @pytest.mark.asyncio
     @respx.mock
     async def test_test_connection_failure(self):
-        respx.get("https://api.test.com").mock(
-            return_value=Response(500)
-        )
+        respx.get("https://api.test.com").mock(return_value=Response(500))
 
         connector = RestApiConnector(
             config={"base_url": "https://api.test.com"},

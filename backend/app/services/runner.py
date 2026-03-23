@@ -9,9 +9,7 @@ logger = logging.getLogger(__name__)
 _background_tasks: set[asyncio.Task] = set()
 
 
-async def trigger_run(
-    pipeline: Pipeline, run: PipelineRun
-) -> None:
+async def trigger_run(pipeline: Pipeline, run: PipelineRun) -> None:
     from app.orchestration.flows import run_etl_pipeline
 
     task = asyncio.create_task(
