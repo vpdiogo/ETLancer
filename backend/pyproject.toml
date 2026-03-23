@@ -1,0 +1,46 @@
+[project]
+name = "etlancer"
+version = "0.1.0"
+description = "A data extraction service for multiple sources built with FastAPI"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "asyncpg>=0.30.0",
+    "psycopg2-binary>=2.9.10",
+    "alembic>=1.14.0",
+    "httpx>=0.28.0",
+    "python-multipart>=0.0.18",
+    "pandas>=2.2.0",
+    "prefect>=3.1.0",
+    "gspread>=6.1.0",
+    "google-auth>=2.0.0",
+    "cryptography>=43.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "respx>=0.22.0",
+    "aiosqlite>=0.20.0",
+]
+
+[tool.black]
+line-length = 80
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 80
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["app/tests"]
