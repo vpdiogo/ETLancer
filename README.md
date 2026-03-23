@@ -39,6 +39,9 @@ A full-stack data extraction service for multiple sources (REST APIs, CSV files,
 - **Orchestration**: Prefect-powered scheduling with retries and monitoring
 - **Dashboard**: Real-time monitoring of connections, pipelines, and run history
 - **Full CRUD API**: RESTful endpoints with automatic Swagger documentation
+- **API Key authentication**: Bearer token auth on all API endpoints
+- **Credential encryption**: Fernet-encrypted storage for sensitive data
+- **Database migrations**: Alembic-managed schema versioning
 
 ## Quick Start
 
@@ -53,7 +56,7 @@ cp .env.example .env
 # Start all services
 docker compose up --build
 
-# Access the services:
+# Access the services (default API key: dev-api-key-change-me):
 # Frontend:  http://localhost:3000
 # Backend:   http://localhost:8000
 # API Docs:  http://localhost:8000/docs
@@ -88,7 +91,21 @@ ETLancer/
 └── .env.example
 ```
 
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `POSTGRES_USER` | Database user | `postgres` |
+| `POSTGRES_PASSWORD` | Database password | `postgres` |
+| `POSTGRES_DB` | Database name | `etlancer` |
+| `API_KEY` | Bearer token for API auth | `dev-api-key-change-me` |
+| `ENCRYPTION_KEY` | Fernet key for credential encryption | (dev key in .env.example) |
+| `CORS_ORIGINS` | Allowed origins (comma-separated) | `http://localhost:3000` |
+| `NEXT_PUBLIC_API_KEY` | API key for frontend | same as `API_KEY` |
+
 ## API Endpoints
+
+All endpoints require `Authorization: Bearer <API_KEY>` header (except `GET /`).
 
 | Method | Endpoint                          | Description              |
 |--------|-----------------------------------|--------------------------|
