@@ -13,11 +13,8 @@ def sample_df():
     )
 
 
-@patch("app.services.loader.create_engine")
-def test_load_defaults(mock_create_engine, sample_df):
-    mock_engine = MagicMock()
-    mock_create_engine.return_value = mock_engine
-
+@patch("app.services.loader._engine")
+def test_load_defaults(mock_engine, sample_df):
     with patch.object(
         pd.DataFrame, "to_sql", return_value=3
     ) as mock_to_sql:
@@ -32,15 +29,11 @@ def test_load_defaults(mock_create_engine, sample_df):
         schema="public",
         index=False,
     )
-    mock_engine.dispose.assert_called_once()
     assert result == 3
 
 
-@patch("app.services.loader.create_engine")
-def test_load_append_mode(mock_create_engine, sample_df):
-    mock_engine = MagicMock()
-    mock_create_engine.return_value = mock_engine
-
+@patch("app.services.loader._engine")
+def test_load_append_mode(mock_engine, sample_df):
     with patch.object(
         pd.DataFrame, "to_sql", return_value=3
     ):
@@ -56,13 +49,8 @@ def test_load_append_mode(mock_create_engine, sample_df):
     assert result == 3
 
 
-@patch("app.services.loader.create_engine")
-def test_load_returns_len_when_none(
-    mock_create_engine, sample_df
-):
-    mock_engine = MagicMock()
-    mock_create_engine.return_value = mock_engine
-
+@patch("app.services.loader._engine")
+def test_load_returns_len_when_none(mock_engine, sample_df):
     with patch.object(
         pd.DataFrame, "to_sql", return_value=None
     ):
@@ -76,3 +64,17 @@ def test_load_returns_len_when_none(
 def test_load_missing_target_table(sample_df):
     with pytest.raises(KeyError):
         load_to_database(sample_df, {})
+
+
+def test_load_reserved_table(sample_df):
+    with pytest.raises(ValueError, match="reserved table"):
+        load_to_database(
+            sample_df, {"target_table": "connections"}
+        )
+
+
+def test_load_invalid_table_name(sample_df):
+    with pytest.raises(ValueError, match="Invalid table"):
+        load_to_database(
+            sample_df, {"target_table": "DROP TABLE;"}
+        )

@@ -7,6 +7,20 @@ import pandas as pd
 from app.connectors.base import BaseConnector
 from app.connectors.registry import register_connector
 
+ALLOWED_CSV_DIRS = ["/data", "/tmp"]
+
+
+def _validate_file_path(file_path: str) -> Path:
+    path = Path(file_path).resolve()
+    if not any(
+        str(path).startswith(d) for d in ALLOWED_CSV_DIRS
+    ):
+        raise PermissionError(
+            f"Access denied: file path must be under "
+            f"{ALLOWED_CSV_DIRS}"
+        )
+    return path
+
 
 @register_connector("csv")
 class CsvConnector(BaseConnector):
@@ -31,9 +45,11 @@ class CsvConnector(BaseConnector):
                 response = await client.head(url)
                 response.raise_for_status()
         elif source_type == "file":
-            path = Path(self.config["file_path"])
+            path = _validate_file_path(self.config["file_path"])
             if not path.exists():
-                raise FileNotFoundError(f"CSV file not found: {path}")
+                raise FileNotFoundError(
+                    f"CSV file not found: {path}"
+                )
         return True
 
     async def extract(self, extraction_config: dict) -> pd.DataFrame:
@@ -57,9 +73,9 @@ class CsvConnector(BaseConnector):
                 header=header,
             )
 
-        path = self.config["file_path"]
+        path = _validate_file_path(self.config["file_path"])
         return pd.read_csv(
-            path,
+            str(path),
             delimiter=delimiter,
             encoding=encoding,
             header=header,

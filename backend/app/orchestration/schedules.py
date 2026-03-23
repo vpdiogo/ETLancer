@@ -1,4 +1,9 @@
+import uuid
+
 from prefect.client.orchestration import get_client
+
+from app.core.database import AsyncSessionLocal
+from app.crud.pipeline_run import create_pipeline_run
 
 
 async def create_deployment(
@@ -8,10 +13,19 @@ async def create_deployment(
 ) -> str:
     from app.orchestration.flows import run_etl_pipeline
 
+    async with AsyncSessionLocal() as db:
+        run = await create_pipeline_run(
+            db, uuid.UUID(pipeline_id)
+        )
+        run_id = str(run.id)
+
     deployment_id = await run_etl_pipeline.to_deployment(
         name=f"etl-{pipeline_name}",
         cron=schedule,
-        parameters={"pipeline_id": pipeline_id, "run_id": ""},
+        parameters={
+            "pipeline_id": pipeline_id,
+            "run_id": run_id,
+        },
         tags=["etlancer", "scheduled"],
     )
     return str(deployment_id)

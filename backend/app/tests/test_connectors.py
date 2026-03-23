@@ -194,10 +194,21 @@ class TestCsvConnector:
         connector = CsvConnector(
             config={
                 "source_type": "file",
-                "file_path": "/nonexistent/file.csv",
+                "file_path": "/tmp/nonexistent/file.csv",
             },
         )
         with pytest.raises(FileNotFoundError):
+            await connector.test_connection()
+
+    @pytest.mark.asyncio
+    async def test_test_connection_path_traversal(self):
+        connector = CsvConnector(
+            config={
+                "source_type": "file",
+                "file_path": "/etc/passwd",
+            },
+        )
+        with pytest.raises(PermissionError):
             await connector.test_connection()
 
 

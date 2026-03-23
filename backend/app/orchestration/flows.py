@@ -3,11 +3,13 @@ from datetime import datetime, timezone
 
 from prefect import flow, get_run_logger
 from prefect.runtime import flow_run
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.core.database import AsyncSessionLocal
 from app.core.encryption import decrypt_credentials
-from app.crud.pipeline import get_pipeline
 from app.crud.pipeline_run import update_pipeline_run
+from app.models.pipeline import Pipeline
 from app.orchestration.tasks import (
     extract_data,
     load_data,
@@ -24,11 +26,24 @@ async def run_etl_pipeline(
     rid = uuid.UUID(run_id)
 
     async with AsyncSessionLocal() as db:
-        pipeline = await get_pipeline(db, pid)
+        result = await db.execute(
+            select(Pipeline)
+            .where(Pipeline.id == pid)
+            .options(selectinload(Pipeline.source_connection))
+        )
+        pipeline = result.scalar_one_or_none()
         if not pipeline:
             raise ValueError(
                 f"Pipeline {pipeline_id} not found"
             )
+
+        connector_type = pipeline.source_connection.connector_type
+        config = pipeline.source_connection.config
+        credentials_raw = pipeline.source_connection.credentials
+        extraction_config = pipeline.extraction_config or {}
+        transform_config = pipeline.transform_config
+        load_config = pipeline.load_config
+        pipeline_name = pipeline.name
 
         prefect_run_id = flow_run.id
         await update_pipeline_run(
@@ -43,31 +58,28 @@ async def run_etl_pipeline(
 
     try:
         logger.info(
-            f"Starting ETL for pipeline: {pipeline.name}"
+            f"Starting ETL for pipeline: {pipeline_name}"
         )
 
         creds = (
-            decrypt_credentials(
-                pipeline.source_connection.credentials
-            )
-            if pipeline.source_connection.credentials
+            decrypt_credentials(credentials_raw)
+            if credentials_raw
             else {}
         )
 
         df = await extract_data(
-            connector_type=pipeline.source_connection.connector_type,
-            config=pipeline.source_connection.config,
+            connector_type=connector_type,
+            config=config,
             credentials=creds,
-            extraction_config=pipeline.extraction_config
-            or {},
+            extraction_config=extraction_config,
         )
         rows_extracted = len(df)
         logger.info(f"Extracted {rows_extracted} rows")
 
-        df = transform_data(df, pipeline.transform_config)
+        df = transform_data(df, transform_config)
         logger.info(f"Transformed data: {len(df)} rows")
 
-        rows_loaded = load_data(df, pipeline.load_config)
+        rows_loaded = load_data(df, load_config)
         logger.info(f"Loaded {rows_loaded} rows")
 
         async with AsyncSessionLocal() as db:
