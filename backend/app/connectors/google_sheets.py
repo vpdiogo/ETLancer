@@ -1,3 +1,6 @@
+import asyncio
+from functools import partial
+
 import pandas as pd
 
 from app.connectors.base import BaseConnector
@@ -21,24 +24,46 @@ class GoogleSheetsConnector(BaseConnector):
 
     def _get_client(self):
         import gspread
-        from oauth2client.service_account import ServiceAccountCredentials
+        from oauth2client.service_account import (
+            ServiceAccountCredentials,
+        )
 
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive",
         ]
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(
-            self.credentials["service_account_json"], scope
+        creds = (
+            ServiceAccountCredentials.from_json_keyfile_dict(
+                self.credentials["service_account_json"],
+                scope,
+            )
         )
         return gspread.authorize(creds)
 
     async def test_connection(self) -> bool:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None, self._test_connection_sync
+        )
+        return True
+
+    def _test_connection_sync(self) -> None:
         client = self._get_client()
         spreadsheet_id = self.config["spreadsheet_id"]
         client.open_by_key(spreadsheet_id)
-        return True
 
-    async def extract(self, extraction_config: dict) -> pd.DataFrame:
+    async def extract(
+        self, extraction_config: dict
+    ) -> pd.DataFrame:
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            partial(self._extract_sync, extraction_config),
+        )
+
+    def _extract_sync(
+        self, extraction_config: dict
+    ) -> pd.DataFrame:
         client = self._get_client()
         spreadsheet_id = self.config["spreadsheet_id"]
         workbook = client.open_by_key(spreadsheet_id)

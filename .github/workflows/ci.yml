@@ -54,6 +54,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: etlancer_test
+          API_KEY: test-api-key
+          ENCRYPTION_KEY: cYFNSivrrSI20TZVNxKKJvgJsfx9sDvtAtljDMUAtTc=
 
   frontend:
     runs-on: ubuntu-latest

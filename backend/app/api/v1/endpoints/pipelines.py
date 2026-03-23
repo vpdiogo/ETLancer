@@ -1,7 +1,10 @@
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.core.database import get_db
 from app.crud import pipeline as crud
@@ -80,7 +83,11 @@ async def trigger_pipeline_run(
 
     try:
         await trigger_run(pipeline, run)
-    except Exception:
-        pass  # Run was created; orchestration failure is tracked in run status
+    except Exception as e:
+        logger.error(f"Failed to trigger run {run.id}: {e}")
+        run.status = "failed"
+        run.error_message = f"Failed to start: {e}"
+        await db.commit()
+        await db.refresh(run)
 
     return run

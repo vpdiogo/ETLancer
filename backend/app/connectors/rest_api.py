@@ -1,8 +1,29 @@
+import ipaddress
+from urllib.parse import urlparse
+
 import httpx
 import pandas as pd
 
 from app.connectors.base import BaseConnector
 from app.connectors.registry import register_connector
+
+BLOCKED_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "metadata.google.internal"}
+
+
+def _validate_url(url: str) -> None:
+    parsed = urlparse(url)
+    hostname = parsed.hostname or ""
+    if hostname in BLOCKED_HOSTS:
+        raise ValueError(f"Blocked host: {hostname}")
+    try:
+        ip = ipaddress.ip_address(hostname)
+        if ip.is_private or ip.is_loopback or ip.is_link_local:
+            raise ValueError(
+                f"Blocked private/internal IP: {ip}"
+            )
+    except ValueError as e:
+        if "Blocked" in str(e):
+            raise
 
 
 @register_connector("rest_api")
@@ -30,6 +51,7 @@ class RestApiConnector(BaseConnector):
 
     async def test_connection(self) -> bool:
         base_url = self.config["base_url"]
+        _validate_url(base_url)
         headers = self._build_headers()
         async with httpx.AsyncClient(headers=headers, timeout=10) as client:
             response = await client.get(base_url)
@@ -38,6 +60,7 @@ class RestApiConnector(BaseConnector):
 
     async def extract(self, extraction_config: dict) -> pd.DataFrame:
         base_url = self.config["base_url"]
+        _validate_url(base_url)
         endpoint = extraction_config.get("endpoint", "")
         method = extraction_config.get("method", "GET").upper()
         params = extraction_config.get("params", {})
